@@ -251,29 +251,11 @@ TEMPLATES = [
     },
 ]
 
-MIDDLEWARE_CLASSES = (  # NOQA
-    'awx.main.middleware.TimingMiddleware',
-    'awx.main.middleware.MigrationRanCheckMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.locale.LocaleMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'awx.main.middleware.ActivityStreamMiddleware',
-    'awx.sso.middleware.SocialAuthMiddleware',
-    'crum.CurrentRequestUserMiddleware',
-    'awx.main.middleware.URLModificationMiddleware',
-    'awx.main.middleware.SessionTimeoutMiddleware',
-)
-
-
 ROOT_URLCONF = 'awx.urls'
 
 WSGI_APPLICATION = 'awx.wsgi.application'
 
-INSTALLED_APPS = (
+INSTALLED_APPS = [
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.messages',
@@ -294,7 +276,7 @@ INSTALLED_APPS = (
     'awx.ui',
     'awx.sso',
     'solo'
-)
+]
 
 INTERNAL_IPS = ('127.0.0.1',)
 
@@ -447,16 +429,6 @@ AWX_ISOLATED_VERBOSITY = 0
 #     }
 # }
 
-# Use Django-Debug-Toolbar if installed.
-try:
-    import debug_toolbar
-    INSTALLED_APPS += (debug_toolbar.__name__,)
-except ImportError:
-    pass
-
-DEBUG_TOOLBAR_CONFIG = {
-    'ENABLE_STACKTRACES' : True,
-}
 
 DEVSERVER_DEFAULT_ADDR = '0.0.0.0'
 DEVSERVER_DEFAULT_PORT = '8013'
@@ -628,7 +600,7 @@ AWX_REBUILD_SMART_MEMBERSHIP = False
 ALLOW_JINJA_IN_EXTRA_VARS = 'template'
 
 # Enable dynamically pulling roles from a requirement.yml file
-# when updating SCM projects 
+# when updating SCM projects
 # Note: This setting may be overridden by database settings.
 AWX_ROLES_ENABLED = True
 
@@ -1041,8 +1013,8 @@ LOGGING = {
             'class': 'django.utils.log.AdminEmailHandler',
         },
         'tower_warnings': {
-            'level': 'WARNING',
-            'class':'logging.handlers.RotatingFileHandler',
+            # don't define a level here, it's set by settings.LOG_AGGREGATOR_LEVEL
+            'class':'awx.main.utils.handlers.RotatingProductionLogHandler',
             'filters': ['require_debug_false'],
             'filename': os.path.join(LOG_ROOT, 'tower.log'),
             'maxBytes': 1024 * 1024 * 5, # 5 MB
@@ -1050,8 +1022,8 @@ LOGGING = {
             'formatter':'simple',
         },
         'callback_receiver': {
-            'level': 'WARNING',
-            'class':'logging.handlers.RotatingFileHandler',
+            # don't define a level here, it's set by settings.LOG_AGGREGATOR_LEVEL
+            'class':'awx.main.utils.handlers.RotatingProductionLogHandler',
             'filters': ['require_debug_false'],
             'filename': os.path.join(LOG_ROOT, 'callback_receiver.log'),
             'maxBytes': 1024 * 1024 * 5, # 5 MB
@@ -1059,8 +1031,8 @@ LOGGING = {
             'formatter':'simple',
         },
         'dispatcher': {
-            'level': 'WARNING',
-            'class':'logging.handlers.RotatingFileHandler',
+            # don't define a level here, it's set by settings.LOG_AGGREGATOR_LEVEL
+            'class':'awx.main.utils.handlers.RotatingProductionLogHandler',
             'filters': ['require_debug_false'],
             'filename': os.path.join(LOG_ROOT, 'dispatcher.log'),
             'maxBytes': 1024 * 1024 * 5, # 5 MB
@@ -1077,8 +1049,8 @@ LOGGING = {
             'formatter': 'timed_import',
         },
         'task_system': {
-            'level': 'INFO',
-            'class':'logging.handlers.RotatingFileHandler',
+            # don't define a level here, it's set by settings.LOG_AGGREGATOR_LEVEL
+            'class':'awx.main.utils.handlers.RotatingProductionLogHandler',
             'filters': ['require_debug_false'],
             'filename': os.path.join(LOG_ROOT, 'task_system.log'),
             'maxBytes': 1024 * 1024 * 5, # 5 MB
@@ -1211,3 +1183,20 @@ AWX_REQUEST_PROFILE = False
 
 # Delete temporary directories created to store playbook run-time
 AWX_CLEANUP_PATHS = True
+
+MIDDLEWARE = [
+    'awx.main.middleware.TimingMiddleware',
+    'awx.main.middleware.MigrationRanCheckMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'awx.main.middleware.ActivityStreamMiddleware',
+    'awx.sso.middleware.SocialAuthMiddleware',
+    'crum.CurrentRequestUserMiddleware',
+    'awx.main.middleware.URLModificationMiddleware',
+    'awx.main.middleware.SessionTimeoutMiddleware',
+]
