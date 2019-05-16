@@ -18,7 +18,6 @@ from django.db import IntegrityError, connection
 from django.utils.functional import curry
 from django.shortcuts import get_object_or_404, redirect
 from django.apps import apps
-from django.utils.deprecation import MiddlewareMixin
 from django.utils.translation import ugettext_lazy as _
 from django.urls import reverse, resolve
 
@@ -32,7 +31,7 @@ analytics_logger = logging.getLogger('awx.analytics.activity_stream')
 perf_logger = logging.getLogger('awx.analytics.performance')
 
 
-class TimingMiddleware(threading.local, MiddlewareMixin):
+class TimingMiddleware(threading.local):
 
     dest = '/var/log/tower/profile'
 
@@ -65,12 +64,11 @@ class TimingMiddleware(threading.local, MiddlewareMixin):
         return filepath
 
 
-class ActivityStreamMiddleware(threading.local, MiddlewareMixin):
+class ActivityStreamMiddleware(threading.local):
 
-    def __init__(self, get_response=None):
+    def __init__(self):
         self.disp_uid = None
         self.instance_ids = []
-        super().__init__(get_response)
 
     def process_request(self, request):
         if hasattr(request, 'user') and hasattr(request.user, 'is_authenticated') and request.user.is_authenticated():
@@ -120,7 +118,7 @@ class ActivityStreamMiddleware(threading.local, MiddlewareMixin):
                     self.instance_ids.append(instance.id)
 
 
-class SessionTimeoutMiddleware(MiddlewareMixin):
+class SessionTimeoutMiddleware(object):
     """
     Resets the session timeout for both the UI and the actual session for the API
     to the value of SESSION_COOKIE_AGE on every request if there is a valid session.
@@ -153,9 +151,9 @@ def _customize_graph():
         settings.NAMED_URL_GRAPH[Instance].add_bindings()
 
 
-class URLModificationMiddleware(MiddlewareMixin):
+class URLModificationMiddleware(object):
 
-    def __init__(self, get_response=None):
+    def __init__(self):
         models = [m for m in apps.get_app_config('main').get_models() if hasattr(m, 'get_absolute_url')]
         generate_graph(models)
         _customize_graph()
@@ -179,7 +177,6 @@ class URLModificationMiddleware(MiddlewareMixin):
             category=_('Named URL'),
             category_slug='named-url',
         )
-        super().__init__(get_response)
 
     def _named_url_to_pk(self, node, named_url):
         kwargs = {}
@@ -210,7 +207,7 @@ class URLModificationMiddleware(MiddlewareMixin):
             request.path_info = new_path
 
 
-class MigrationRanCheckMiddleware(MiddlewareMixin):
+class MigrationRanCheckMiddleware(object):
 
     def process_request(self, request):
         executor = MigrationExecutor(connection)
